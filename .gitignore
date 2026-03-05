@@ -8,3 +8,19 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# VSCode settings
+.vscode/
+
+# MacOS files
+.DS_Store
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# Ignore the output of the exploration notebook
+notebooks/exploration.ipynb
