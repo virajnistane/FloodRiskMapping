@@ -22,5 +22,9 @@ wheels/
 *.log
 *.tmp
 
-# Ignore the output of the exploration notebook
+# Jupyter Notebooks
 *.ipynb
+
+# Others
+*.tar.gz
+*.zip

@@ -53,24 +53,24 @@ class FloodRiskPipeline:
             f.write(f"Total flooded area: {area_km2:.2f} km²\n")
     
 def main() -> None:
-    dem_path = RAW_DIR / "output_hh.tif"
+    dem_path = RAW_DIR / "dem_delft.tif"
     water_level: float = 2.0  # meters above reference
 
     pipeline = FloodRiskPipeline(dem_path, water_level)
     dem_ds = load_dem(dem_path)
     flooded_mask = pipeline.compute_flood_mask(dem_ds)
 
-    flood_raster_path: Path = PROC_DIR / "flood_mask.tif"
+    flood_raster_path: Path = PROC_DIR / "flood_mask_delft.tif"
     pipeline.save_flood_raster(dem_ds, flooded_mask, flood_raster_path)
 
     flood_gdf: gpd.GeoDataFrame = pipeline.flooded_polygons_from_mask(dem_ds, flooded_mask)
-    flood_vec_path: Path = PROC_DIR / "flood_polygons.gpkg"
+    flood_vec_path: Path = PROC_DIR / "flood_polygons_delft.gpkg"
     flood_gdf.to_file(flood_vec_path, driver="GPKG")
 
     area_km2: float = pipeline.summarize_flood_area(flood_gdf)
     print(f"Total flooded area: {area_km2:.2f} km²")
 
-    summary_path: Path = PROC_DIR / "flood_summary.txt"
+    summary_path: Path = PROC_DIR / "flood_summary_delft.txt"
     pipeline.write_summary_report(area_km2, summary_path)
 
 if __name__ == "__main__":
