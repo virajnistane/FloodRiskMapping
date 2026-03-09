@@ -1,0 +1,5 @@
+outs:
+- md5: 0426e0621ed7a03dc2b3a1934349487a
+  size: 167052
+  hash: md5
+  path: flood_mask_nice.tif
