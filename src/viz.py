@@ -1,3 +1,4 @@
+import argparse
 import matplotlib.pyplot as plt
 import rasterio
 from pathlib import Path
@@ -78,22 +79,27 @@ def plot_flood_with_coastbuffer(dem_path: Path, coast_mask_path: Path,
     plt.close()
 
 
-if __name__ == "__main__":
+def main(config_path: str = "config.yaml") -> None:
+    """Generate flood visualizations.
+    
+    Args:
+        config_path: Path to YAML configuration file
+    """
     # Load configuration
-    config = load_config('configs/config_delft.yaml')
+    config = load_config(config_path)
     
     # Create flood visualization
     plot_flood(
         dem_path=config.dem_path,
         flood_path=config.flood_mask_path,
-        output_path=config.processed_dir / "flood_map.png",
+        output_path=config.flood_map_output_path,
         figsize=config.viz_figsize,
         terrain_cmap=config.terrain_colormap,
         flood_cmap=config.flood_colormap,
         alpha=config.flood_alpha,
         dpi=config.viz_dpi
     )
-    print(f"Visualization saved to {config.processed_dir / 'flood_map.png'}")
+    print(f"Visualization saved to {config.flood_map_output_path}")
     
     # Optional: plot with coastline buffer if available
     coastline_buffer_path = config.processed_dir / "coastline_buffer_mask.tif"
@@ -102,9 +108,22 @@ if __name__ == "__main__":
             dem_path=config.dem_path,
             coast_mask_path=coastline_buffer_path,
             flood_path=config.flood_mask_path,
-            output_path=config.processed_dir / "debug_layers.png",
+            output_path=config.debug_layers_output_path,
             figsize=(10, 8),
             dpi=config.viz_dpi
         )
-        print(f"Debug visualization saved to {config.processed_dir / 'debug_layers.png'}")
+        print(f"Debug visualization saved to {config.debug_layers_output_path}")
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Generate flood visualization maps",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    parser.add_argument(
+        "-c", "--config",
+        default="config.yaml",
+        help="Path to YAML configuration file"
+    )
+    args = parser.parse_args()
+    main(config_path=args.config)
 

@@ -103,6 +103,18 @@ class Config:
     def flood_alpha(self) -> float:
         """Alpha transparency for flood overlay."""
         return float(self._config.get("visualization", {}).get("flood_alpha", 0.5))
+    
+    @property
+    def flood_map_output_path(self) -> Path:
+        """Output path for main flood visualization map."""
+        filename = self._config.get("visualization", {}).get("flood_map_output", "flood_map.png")
+        return self.processed_dir / filename
+    
+    @property
+    def debug_layers_output_path(self) -> Path:
+        """Output path for debug layers visualization."""
+        filename = self._config.get("visualization", {}).get("debug_layers_output", "debug_layers.png")
+        return self.processed_dir / filename
 
 
 def load_config(config_path: str | Path = "configs/config_delft.yaml") -> Config:

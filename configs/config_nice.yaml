@@ -27,3 +27,6 @@ visualization:
   flood_colormap: "Blues"
   terrain_colormap: "terrain"
   flood_alpha: 0.5
+  # Output file names for visualizations
+  flood_map_output: "flood_map_nice.png"
+  debug_layers_output: "debug_layers_nice.png"

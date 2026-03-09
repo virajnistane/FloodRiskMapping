@@ -49,17 +49,15 @@ source .venv/bin/activate
 
 ### Configuration
 
-All pip-m src.pipeline
-```
+All pipeline parameters are managed through `config.yaml`. Edit this file to customize:
 
-This will:
-- Load the DEM from the path specified in `config.yaml`
-- Generate flood mask at the configured water level
-- Apply coastline buffer (if enabled)
-- Save results to `data/processed/`:
-  - Flood mask raster (`.tif`)
-  - Flood polygons vector (`.gpkg`)
-  - Summary report (`.txt`
+- **Input data paths** (DEM file, coastline shapefile)
+- **Water level threshold** (meters)
+- **Coastline buffer distance** (meters, or null to disable)
+- **Output file names** and formats
+- **Visualization settings** (DPI, colormaps, figure size)
+
+Example configuration:
 ```yaml
 pipeline:
   water_level: 2.0  # meters above reference
@@ -69,30 +67,62 @@ pipeline:
 
 ### Run the flood mapping pipeline:
 ```bash
-python src/pipeline.py
+python -m src.pipeline
+```
+
+With a custom configuration file:
+```bash
+python -m src.pipeline --config configs/my_config.yaml
+# or short form
+python -m src.pipeline -c configs/my_config.yaml
 ```
 
 This will:
-- Load the DEM from `data/raw/output_hh.tif`
-- Generate flood mask at 2.0m water level
+- Load the DEM from the path specified in config
+- Generate flood mask at the configured water level
+- Apply coastline buffer (if enabled)
 - Save results to `data/processed/`:
-  - `flood_mask.tif` (raster)
-  - `flood_polygons.gpkg` (vector)
+  - Flood mask raster (`.tif`)
+  - Flood polygons vector (`.gpkg`)
+  - Summary report (`.txt`)
 - Print total flooded area in km²
 
-### Run-m src.viz
+### Run visualization:
+```bash
+python -m src.viz
 ```
 
-Generates flood visualization maps using settings from `config.yaml`.bash
-python src/viz.py
+With a custom configuration file:
+```bash
+python -m src.viz --config configs/my_config.yaml
 ```
+
+Generates flood visualization maps using settings from the config file.
 
 ### Run tests:
 ```bash
 pytest tests/
 ```
 
-## Pconfig.yaml           # Pipeline configuration (EDIT THIS!)
+### CLI Options
+
+Both scripts support command-line arguments:
+
+```bash
+# Show help
+python -m src.pipeline --help
+python -m src.viz --help
+
+# Use custom config
+python -m src.pipeline -c path/to/config.yaml
+python -m src.viz -c path/to/config.yaml
+```
+
+## Project Structure
+
+```
+.
+├── config.yaml           # Pipeline configuration (EDIT THIS!)
 ├── data/
 │   ├── raw/              # Input DEM files
 │   └── processed/        # Output flood masks and polygons
@@ -102,11 +132,7 @@ pytest tests/
 │   ├── pipeline.py       # Main flood mapping pipeline
 │   ├── load_data.py      # Data loading utilities
 │   ├── coastline_buffer.py  # Coastline processing
-│   └── viz.py sed/        # Output flood masks and polygons
-├── notebooks/            # Jupyter notebooks for exploration
-├── src/
-│   ├── pipeline.py       # Main flood mapping pipeline
-│   └── viz.py           # Visualization scripts
+│   └── viz.py            # Visualization scripts
 ├── tests/                # Unit tests
 └── pyproject.toml        # Project dependencies
 ```

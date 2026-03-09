@@ -1,4 +1,5 @@
 from pathlib import Path
+import argparse
 
 import geopandas as gpd
 import numpy as np
@@ -97,9 +98,14 @@ class FloodRiskPipeline:
             f.write(f"Flooded ratio: {self.ratio_flooded:.2%}\n")
             f.write(f"Total flooded area: {area_km2:.2f} km²\n")
     
-def main() -> None:
+def main(config_path: str = "config.yaml") -> None:
+    """Run the flood risk mapping pipeline.
+    
+    Args:
+        config_path: Path to YAML configuration file
+    """
     # Load configuration
-    config = load_config(config_path="configs/config_nice.yaml")
+    config = load_config(config_path=config_path)
     
     # Initialize pipeline with config parameters
     pipeline = FloodRiskPipeline(
@@ -131,4 +137,14 @@ def main() -> None:
     pipeline.write_summary_report(area_km2, config.summary_report_path)
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(
+        description="Run flood risk mapping pipeline",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    parser.add_argument(
+        "-c", "--config",
+        default="config.yaml",
+        help="Path to YAML configuration file"
+    )
+    args = parser.parse_args()
+    main(config_path=args.config)
