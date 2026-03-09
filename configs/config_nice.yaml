@@ -1,9 +1,9 @@
 # Flood Risk Mapping Pipeline Configuration
 
 info:
-  name: "delft"
-  description: "Flood risk mapping for Delft"
-  
+  name: "nice"
+  description: "Flood risk mapping for Nice, France"
+
 # Input data paths
 data:
   raw_dir: "data/raw"
