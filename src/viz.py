@@ -102,7 +102,7 @@ def main(config_path: str = "config.yaml") -> None:
     print(f"Visualization saved to {config.flood_map_output_path}")
     
     # Optional: plot with coastline buffer if available
-    coastline_buffer_path = config.processed_dir / "coastline_buffer_mask.tif"
+    coastline_buffer_path = config.processed_dir / f"coastline_buffer_mask_{config.config_name}_{config.coast_buffer_dist_m}m.tif"
     if coastline_buffer_path.exists():
         plot_flood_with_coastbuffer(
             dem_path=config.dem_path,

@@ -1,4 +1,5 @@
 from pathlib import Path
+import argparse
 
 import geopandas as gpd
 import numpy as np
@@ -10,11 +11,15 @@ from shapely.geometry import shape
 
 from src.load_data import RAW_DIR, PROC_DIR, load_dem
 from src.coastline import CoastlineProcessor
+from src.config import load_config
 
 
 class CoastlineBuffer:
     """ Class to create a coastal buffer zone and generate a raster mask for flood risk analysis. """
-    def __init__(self, dem_path: Path, coastline_path: Path, buffer_dist_m: float):
+    def __init__(self, 
+                 dem_path: Path, 
+                 coastline_path: Path, 
+                 buffer_dist_m: float):
         self.dem_ds = load_dem(dem_path)
         self.coastline_processor = CoastlineProcessor(dem_path)
         
@@ -63,24 +68,16 @@ def rasterize_coast_buffer(buffered_gdf, dem_ds, out_value=1):
     
     return coast_mask
 
-def compute_realistic_flood_mask(dem_ds, water_level: float, coast_mask):
-    """Flood only where DEM <= water_level AND near coast."""
-    dem = dem_ds.read(1)
-    nodata = dem_ds.nodata
-    valid_mask = dem != nodata
-    
-    # Basic flood condition
-    flood_condition = (dem <= water_level) & valid_mask
-    
-    # Restrict to coastal buffer
-    realistic_flood = flood_condition & coast_mask
-    
-    return realistic_flood
-
 if __name__ == "__main__":
-    dem_path = RAW_DIR / "dem_delft.tif"
-    coastline_path = RAW_DIR / "ne_10m_coastline" / "ne_10m_coastline.shp"
-    buffer_dist_m = 100.0  # meters
-    coastline_buffer = CoastlineBuffer(dem_path, coastline_path, buffer_dist_m)
+    parser = argparse.ArgumentParser(description="Generate coastal buffer mask for flood risk mapping.")
+    parser.add_argument("-c", "--config", type=str, default="config.yaml", help="Path to YAML configuration file")
+    args = parser.parse_args()
+    config = load_config(config_path=args.config)
+
+    coastline_buffer = CoastlineBuffer(
+        dem_path = config.dem_path, 
+        coastline_path = config.coastline_path,
+        buffer_dist_m = 5000.0 # Example buffer distance, can be set in config if desired
+    )
     coast_mask = coastline_buffer.create_buffer_mask()
-    coastline_buffer.save_buffer_mask(coast_mask, PROC_DIR / "coastline_buffer_mask.tif")
+    coastline_buffer.save_buffer_mask(coast_mask, config.inter_dir / f"coastline_buffer_mask_{config.config_name}_{config.coast_buffer_dist_m}.tif")

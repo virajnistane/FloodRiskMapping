@@ -21,9 +21,21 @@ class Config:
             self._config: dict[str, Any] = yaml.safe_load(f)
     
     @property
+    def config_name(self) -> str:
+        """Name of the configuration, for reference in outputs."""
+        return str(self._config.get("info", {}).get("name", "default_config"))
+
+    @property
     def raw_dir(self) -> Path:
         """Directory containing raw input data."""
         return Path(self._config["data"]["raw_dir"])
+    
+    @property
+    def inter_dir(self) -> Path:
+        """Directory for intermediate data products."""
+        inter_dir = Path(self._config["data"]["inter_dir"])
+        inter_dir.mkdir(parents=True, exist_ok=True)
+        return inter_dir
     
     @property
     def processed_dir(self) -> Path:
@@ -33,14 +45,21 @@ class Config:
         return proc_dir
     
     @property
+    def flood_maps_dir(self) -> Path:
+        """Directory for flood map visualizations."""
+        flood_maps_dir = self.processed_dir / "flood_maps"
+        flood_maps_dir.mkdir(parents=True, exist_ok=True)
+        return flood_maps_dir
+    
+    @property
     def dem_path(self) -> Path:
         """Full path to DEM file."""
-        return self.raw_dir / self._config["data"]["dem_file"]
+        return Path(self.raw_dir / self._config["data"]["dem_file"])
     
     @property
     def coastline_path(self) -> Path:
         """Full path to coastline shapefile."""
-        return self.raw_dir / self._config["data"]["coastline_file"]
+        return Path(self.raw_dir / self._config["data"]["coastline_file"])
     
     @property
     def water_level(self) -> float:
@@ -61,17 +80,17 @@ class Config:
     @property
     def flood_mask_path(self) -> Path:
         """Output path for flood mask raster."""
-        return self.processed_dir / self._config["output"]["flood_mask_raster"]
+        return Path(self.processed_dir / self._config["output"]["flood_mask_raster"])
     
     @property
     def flood_polygons_path(self) -> Path:
         """Output path for flood polygons vector."""
-        return self.processed_dir / self._config["output"]["flood_polygons_vector"]
+        return Path(self.processed_dir / self._config["output"]["flood_polygons_vector"])
     
     @property
     def summary_report_path(self) -> Path:
         """Output path for summary report."""
-        return self.processed_dir / self._config["output"]["summary_report"]
+        return Path(self.processed_dir / self._config["output"]["summary_report"])
     
     @property
     def vector_driver(self) -> str:
@@ -108,13 +127,13 @@ class Config:
     def flood_map_output_path(self) -> Path:
         """Output path for main flood visualization map."""
         filename = self._config.get("visualization", {}).get("flood_map_output", "flood_map.png")
-        return self.processed_dir / filename
+        return Path(self.flood_maps_dir / filename)
     
     @property
     def debug_layers_output_path(self) -> Path:
         """Output path for debug layers visualization."""
         filename = self._config.get("visualization", {}).get("debug_layers_output", "debug_layers.png")
-        return self.processed_dir / filename
+        return Path(self.flood_maps_dir / filename)
 
 
 def load_config(config_path: str | Path = "configs/config_delft.yaml") -> Config:
@@ -127,3 +146,4 @@ def load_config(config_path: str | Path = "configs/config_delft.yaml") -> Config
         Config object with pipeline parameters
     """
     return Config(config_path)
+

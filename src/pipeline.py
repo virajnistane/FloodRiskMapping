@@ -12,12 +12,19 @@ from shapely.geometry import shape
 
 from src.load_data import load_dem
 from src.coastline_buffer import CoastlineBuffer
-from src.config import load_config
+from src.config import load_config, Config
 
 class FloodRiskPipeline:
     """ Class to compute flood risk based on DEM and a specified water level, including mask generation, vectorization, area summarization, and report writing. """
-    def __init__(self, dem_path: Path, water_level: float, coastline_path: Optional[Path] = None, 
-                 coast_buffer_dist_m: Optional[float] = 5000.0, metric_crs: int = 3857):
+    def __init__(
+            self, 
+            config: Config,
+            dem_path: Path, 
+            water_level: float, 
+            coastline_path: Optional[Path] = None, 
+            coast_buffer_dist_m: Optional[float] = 5000.0, 
+            metric_crs: int = 3857
+        ):
         self.dem_path = dem_path
         self.water_level = water_level
         self.metric_crs = metric_crs
@@ -27,6 +34,11 @@ class FloodRiskPipeline:
             self.coastlinebuffer: Any = CoastlineBuffer(dem_path, coastline_path, 
                                                    buffer_dist_m = coast_buffer_dist_m)
             self.coast_mask: npt.NDArray[np.bool_] | None = self.coastlinebuffer.create_buffer_mask()
+            self.coast_mask_path = Path(
+                config.inter_dir / 
+                f"coastline_buffer_mask_{config.config_name}_{config.coast_buffer_dist_m}m.tif"
+            )
+            self.coastlinebuffer.save_buffer_mask(self.coast_mask, self.coast_mask_path)
         else:
             self.coastlinebuffer = None
             self.coast_mask = None
@@ -109,6 +121,7 @@ def main(config_path: str = "config.yaml") -> None:
     
     # Initialize pipeline with config parameters
     pipeline = FloodRiskPipeline(
+        config=config,
         dem_path=config.dem_path,
         water_level=config.water_level,
         coastline_path=config.coastline_path,

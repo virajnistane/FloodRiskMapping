@@ -1,9 +1,12 @@
+import argparse
+from ast import arg
 from pathlib import Path
 
 import geopandas as gpd
 from shapely.geometry import LineString, box
 
 from src.load_data import PROC_DIR, RAW_DIR, load_dem
+from src.config import load_config
 
 class CoastlineProcessor:
     """
@@ -39,11 +42,30 @@ class CoastlineProcessor:
         """ Save the processed coastline as a GeoPackage for use in further analysis and visualization."""
         coast_clipped_and_matched.to_file(out_path, driver="GPKG")
 
-if __name__ == "__main__":
-    dem_path = RAW_DIR / "dem_delft.tif"
-    processor = CoastlineProcessor(dem_path)
-    coast = processor.load_coastline(RAW_DIR / "ne_10m_coastline" / "ne_10m_coastline.shp")
+def main(config_path: str = "config.yaml") -> None:
+    """Process coastline data for flood risk mapping.
+    
+    Args:
+        config_path: Path to YAML configuration file
+    """
+    # Load configuration
+    config = load_config(config_path)
+    
+    # Process coastline data
+    processor = CoastlineProcessor(config.dem_path)
+    coast = processor.load_coastline(config.coastline_path)
     coast_clipped = processor.clip_to_dem(coast)
     coast_matched = processor.match_dem_crs(coast_clipped)
-    out_path = PROC_DIR / "coastline_matched_delft.gpkg"
+    
+    # Save processed coastline
+    out_path = config.inter_dir / f"coastline_matched_{config.config_name}.gpkg"
     processor.save_processed_coastline(coast_matched, out_path)
+    print(f"Processed coastline saved to {out_path}")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Process coastline data for flood risk mapping.")
+    parser.add_argument("-c", "--config", type=str, default="config.yaml", help="Path to YAML configuration file")
+    args = parser.parse_args()
+
+    main(config_path=args.config)
