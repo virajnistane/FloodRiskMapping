@@ -9,10 +9,47 @@ import rasterio
 from rasterio import features
 from rasterio.io import DatasetReader
 from shapely.geometry import shape
+import subprocess
 
 from src.coastline_buffer import CoastlineBuffer
 from src.config import Config, load_config
 from src.load_data import load_dem
+
+def track_and_push_outputs(
+    outputs: list[Path],
+    push_remote: bool = True
+) -> None:
+    """Track outputs with DVC and optionally push to remote.
+    
+    Args:
+        outputs: List of file paths to track
+        push_remote: Whether to push to DVC remote storage
+    """
+    for output in outputs:
+        if output and output.exists():
+            try:
+                # Add file to DVC tracking
+                subprocess.run(
+                    ["dvc", "add", str(output)],
+                    check=True,
+                    capture_output=True,
+                    text=True
+                )
+                print(f"✓ Tracked with DVC: {output}")
+            except subprocess.CalledProcessError as e:
+                print(f"⚠ Failed to track {output}: {e.stderr}")
+    
+    if push_remote:
+        try:
+            subprocess.run(
+                ["dvc", "push"],
+                check=True,
+                capture_output=True,
+                text=True
+            )
+            print("✓ Pushed all outputs to DVC remote")
+        except subprocess.CalledProcessError as e:
+            print(f"⚠ Failed to push to remote: {e.stderr}")
 
 
 class FloodRiskPipeline:
@@ -30,7 +67,6 @@ class FloodRiskPipeline:
         self.dem_path = dem_path
         self.water_level = water_level
         self.metric_crs = metric_crs
-        self.load_dem = load_dem
 
         if coast_buffer_dist_m is not None and coastline_path is not None:
             self.coastlinebuffer: Any = CoastlineBuffer(
@@ -122,14 +158,29 @@ class FloodRiskPipeline:
             f.write(f"Total flooded area: {area_km2:.2f} km²\n")
 
 
-def main(config_path: str = "config.yaml") -> None:
+def main(config_path: str = "config.yaml", push_data: bool = False) -> None:
     """Run the flood risk mapping pipeline.
 
     Args:
         config_path: Path to YAML configuration file
+        push_data: Whether to push outputs to DVC remote
     """
     # Load configuration
     config = load_config(config_path=config_path)
+
+    try:
+        print("Pulling data from DVC remote (S3)...")
+        subprocess.run(
+            ["dvc", "pull"],
+            check=True,
+            capture_output=True,
+            text=True
+        )
+        print("✓ Data pulled successfully")
+    except subprocess.CalledProcessError as e:
+        print(f"⚠ Failed to pull data: {e.stderr}")
+        print("Continuing with local data if available...")
+    
 
     # Initialize pipeline with config parameters
     pipeline = FloodRiskPipeline(
@@ -142,27 +193,46 @@ def main(config_path: str = "config.yaml") -> None:
     )
 
     # Load DEM
-    dem_ds = pipeline.load_dem(config.dem_path)
+    dem_ds = load_dem(config.dem_path)
+    
+    try:
+        # Compute flood mask
+        flooded_mask = pipeline.compute_flood_mask(dem_ds)
 
-    # Compute flood mask
-    flooded_mask = pipeline.compute_flood_mask(dem_ds)
+        # Save flood raster
+        pipeline.save_flood_raster(dem_ds, flooded_mask, config.flood_mask_path)
 
-    # Save flood raster
-    pipeline.save_flood_raster(dem_ds, flooded_mask, config.flood_mask_path)
+        # Generate flood polygons
+        flood_gdf: gpd.GeoDataFrame = pipeline.flooded_polygons_from_mask(
+            dem_ds, flooded_mask
+        )
+        flood_gdf.to_file(config.flood_polygons_path, driver=config.vector_driver)
 
-    # Generate flood polygons
-    flood_gdf: gpd.GeoDataFrame = pipeline.flooded_polygons_from_mask(
-        dem_ds, flooded_mask
-    )
-    flood_gdf.to_file(config.flood_polygons_path, driver=config.vector_driver)
+        # Compute and report area
+        area_km2: float = pipeline.summarize_flood_area(flood_gdf)
+        print(f"Total flooded area: {area_km2:.2f} km²")
+        # Write summary report
+        pipeline.write_summary_report(area_km2, config.summary_report_path)
+    finally:
+        # Always close the dataset
+        dem_ds.close()
 
-    # Compute and report area
-    area_km2: float = pipeline.summarize_flood_area(flood_gdf)
-    print(f"Total flooded area: {area_km2:.2f} km²")
+    # Track outputs with DVC and push to remote
 
-    # Write summary report
-    pipeline.write_summary_report(area_km2, config.summary_report_path)
-
+    if push_data:
+        print("Tracking and pushing outputs...")
+        
+        outputs_to_track = [
+            config.flood_mask_path,
+            config.flood_polygons_path,
+            config.summary_report_path
+        ]
+        
+        # Add coast mask if it exists
+        if hasattr(pipeline, "coast_mask_path") and pipeline.coast_mask_path:
+            outputs_to_track.append(pipeline.coast_mask_path)
+        
+        track_and_push_outputs(outputs_to_track, push_remote=True)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -172,5 +242,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "-c", "--config", default="config.yaml", help="Path to YAML configuration file"
     )
+    parser.add_argument(
+        "-pd", "--push-data", default=False, action="store_true", help="Whether to push outputs to DVC remote"
+    )
     args = parser.parse_args()
-    main(config_path=args.config)
+    main(config_path=args.config, push_data=args.push_data)

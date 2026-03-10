@@ -60,7 +60,7 @@ def test_load_dem_file_not_found():
     """Test that appropriate error is raised for nonexistent file."""
     nonexistent_path = Path("data/raw/nonexistent_dem.tif")
     
-    with pytest.raises(rasterio.errors.RasterioIOError):
+    with pytest.raises(RuntimeError, match="Failed to load DEM"):
         load_dem(nonexistent_path)
 
 

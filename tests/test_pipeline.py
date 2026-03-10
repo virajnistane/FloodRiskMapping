@@ -307,7 +307,7 @@ def test_pipeline_end_to_end(test_config, tmp_path):
     )
     
     # Load DEM
-    dem_ds = pipeline.load_dem(test_config.dem_path)
+    dem_ds = load_dem(test_config.dem_path)
     
     # Compute flood mask
     mask = pipeline.compute_flood_mask(dem_ds)
