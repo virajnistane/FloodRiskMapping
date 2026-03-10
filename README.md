@@ -157,6 +157,46 @@ python -m src.viz -c configs/config_nice.yaml
 - Output files are automatically named based on the `info.name` field
 - This prevents output conflicts when running multiple configurations
 
+## Cloud Data Storage
+
+Large data files (DEMs, flood outputs) are managed with **DVC (Data Version Control)** and stored on **AWS S3**. This keeps the Git repository lightweight while enabling version control and team collaboration for datasets.
+
+### Quick Start with DVC
+
+```bash
+# Pull data from S3 (first time or to sync)
+dvc pull
+
+# Run pipeline and push results to S3
+python -m src.pipeline -c configs/config_delft.yaml --push-data
+
+# Manually track and push new files
+dvc add data/processed/new_output.tif
+dvc push
+git add data/processed/new_output.tif.dvc
+git commit -m "Add new output"
+```
+
+### Setup (One-Time)
+
+1. **Install DVC with S3 support**:
+   ```bash
+   uv sync --extra s3
+   ```
+
+2. **Configure AWS credentials**:
+   ```bash
+   aws configure
+   # Enter your AWS Access Key ID and Secret Access Key
+   ```
+
+3. **Pull data from S3**:
+   ```bash
+   dvc pull
+   ```
+
+**For detailed setup, costs, troubleshooting, and best practices**, see [docs/cloud.md](docs/cloud.md).
+
 ## Project Structure
 
 ```
