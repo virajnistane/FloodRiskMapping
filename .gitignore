@@ -10,6 +10,9 @@ wheels/
 # Virtual environments
 .venv
 
+# Environment variables (AWS credentials)
+.env
+
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints
 

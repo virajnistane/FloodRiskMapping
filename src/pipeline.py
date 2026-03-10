@@ -158,7 +158,7 @@ class FloodRiskPipeline:
             f.write(f"Total flooded area: {area_km2:.2f} km²\n")
 
 
-def main(config_path: str = "config.yaml", push_data: bool = False) -> None:
+def main(config_path: str = "config.yaml", push_data: bool = True) -> None:
     """Run the flood risk mapping pipeline.
 
     Args:
@@ -243,7 +243,7 @@ if __name__ == "__main__":
         "-c", "--config", default="config.yaml", help="Path to YAML configuration file"
     )
     parser.add_argument(
-        "-pd", "--push-data", action="store_true", help="Whether to push outputs to DVC remote"
+        "--no-push-data", action="store_true", help="Skip tracking and pushing outputs to DVC remote (default: push enabled)"
     )
     args = parser.parse_args()
-    main(config_path=args.config, push_data=args.push_data)
+    main(config_path=args.config, push_data=not args.no_push_data)

@@ -1,0 +1,41 @@
+services:
+  floodmap:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: floodriskmap:latest
+    container_name: floodmap-pipeline
+    
+    # Mount data and configs as volumes
+    volumes:
+      - ./data:/app/data
+      - ./configs:/app/configs
+      - ./data/processed:/app/data/processed
+    
+    # AWS credentials for DVC S3 access (optional)
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-us-east-1}
+      - DEFAULT_CONFIG=/app/configs/config_delft.yaml
+    
+    # Override command to run specific config
+    # command: ["python", "-m", "src.pipeline", "-c", "/app/configs/config_nice.yaml"]
+    
+    # For interactive debugging
+    # stdin_open: true
+    # tty: true
+
+  # Optional: Visualization service
+  viz:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: floodriskmap:latest
+    container_name: floodmap-viz
+    volumes:
+      - ./data:/app/data
+      - ./configs:/app/configs
+    command: ["python", "-m", "src.viz", "-c", "/app/configs/config_delft.yaml"]
+    depends_on:
+      - floodmap
