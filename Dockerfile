@@ -23,7 +23,8 @@ WORKDIR /app
 COPY pyproject.toml uv.lock README.md ./
 
 # Install dependencies using uv (without installing the project itself yet)
-RUN uv sync --frozen --no-dev --no-install-project
+# Include s3 extra for DVC S3 support
+RUN uv sync --frozen --no-dev --no-install-project --extra s3
 
 # Add the virtual environment to PATH
 ENV PATH="/app/.venv/bin:$PATH"

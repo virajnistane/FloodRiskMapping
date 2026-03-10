@@ -11,6 +11,8 @@ services:
       - ./data:/app/data
       - ./configs:/app/configs
       - ./data/processed:/app/data/processed
+      - ./.dvc:/app/.dvc  # DVC config and cache
+      - ./.git:/app/.git:ro  # Git repo (read-only for DVC)
     
     # AWS credentials for DVC S3 access (optional)
     environment:
@@ -36,6 +38,8 @@ services:
     volumes:
       - ./data:/app/data
       - ./configs:/app/configs
+      - ./.dvc:/app/.dvc
+      - ./.git:/app/.git:ro
     command: ["python", "-m", "src.viz", "-c", "/app/configs/config_delft.yaml"]
     depends_on:
       - floodmap
