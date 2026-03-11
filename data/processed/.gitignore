@@ -1,6 +1,6 @@
 /flood_mask_delft.tif
-/flood_polygons_delft.gpkg
 /flood_summary_delft.txt
 /flood_mask_nice.tif
-/flood_polygons_nice.gpkg
 /flood_summary_nice.txt
+/flood_polygons_delft.geojson
+/flood_polygons_nice.geojson

@@ -1,0 +1,5 @@
+outs:
+- md5: 302218c597982ffe5380e6e991f142ce
+  size: 1736649
+  hash: md5
+  path: flood_polygons_delft.geojson

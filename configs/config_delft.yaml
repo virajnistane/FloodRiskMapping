@@ -20,9 +20,9 @@ pipeline:
 # Output file names
 output:
   flood_mask_raster: "flood_mask_delft.tif"
-  flood_polygons_vector: "flood_polygons_delft.gpkg"
+  flood_polygons_vector: "flood_polygons_delft.geojson"
   summary_report: "flood_summary_delft.txt"
-  vector_driver: "GPKG"  # GeoPackage format
+  vector_driver: "GeoJSON"  # Deterministic format for version control
 
 # Visualization settings (optional)
 visualization:

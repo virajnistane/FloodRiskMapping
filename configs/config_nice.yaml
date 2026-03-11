@@ -21,9 +21,9 @@ pipeline:
 # Output file names
 output:
   flood_mask_raster: "flood_mask_nice.tif"
-  flood_polygons_vector: "flood_polygons_nice.gpkg"
+  flood_polygons_vector: "flood_polygons_nice.geojson"
   summary_report: "flood_summary_nice.txt"
-  vector_driver: "GPKG"  # GeoPackage format
+  vector_driver: "GeoJSON"  # Deterministic format for version control
 
 # Visualization settings (optional)
 visualization:

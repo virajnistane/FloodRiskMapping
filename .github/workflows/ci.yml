@@ -125,20 +125,23 @@ jobs:
     - name: Pull DVC data
       run: uv run dvc pull
       
-    - name: Run pipeline
-      run: uv run python -m src.pipeline -c configs/config_delft.yaml
-      
-    - name: Commit DVC outputs
-      run: |
-        git config user.name github-actions
-        git config user.email github-actions@github.com
-        git add data/**/*.dvc .dvc/config
-        if git diff --staged --quiet; then
-          echo "No changes to commit"
-        else
-          git commit -m "CI: Update DVC outputs [skip ci]"
-          git push
-        fi
-        
-    - name: Push DVC data
-      run: uv run dvc push
+    # Pipeline execution disabled to prevent ping-pong commits
+    # Uncomment these steps if you want CI to regenerate outputs:
+    # 
+    # - name: Run pipeline
+    #   run: uv run python -m src.pipeline -c configs/config_delft.yaml
+    #   
+    # - name: Commit DVC outputs
+    #   run: |
+    #     git config user.name github-actions
+    #     git config user.email github-actions@github.com
+    #     git add data/**/*.dvc .dvc/config
+    #     if git diff --staged --quiet; then
+    #       echo "No changes to commit"
+    #     else
+    #       git commit -m "CI: Update DVC outputs [skip ci]"
+    #       git push
+    #     fi
+    #     
+    # - name: Push DVC data
+    #   run: uv run dvc push
