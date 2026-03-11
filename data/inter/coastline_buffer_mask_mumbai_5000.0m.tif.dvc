@@ -1,0 +1,5 @@
+outs:
+- md5: 7b77f8fbcb1a04c2facea0c4aba8ed48
+  size: 83622
+  hash: md5
+  path: coastline_buffer_mask_mumbai_5000.0m.tif

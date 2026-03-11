@@ -4,3 +4,6 @@
 /flood_summary_nice.txt
 /flood_polygons_delft.geojson
 /flood_polygons_nice.geojson
+/flood_mask_mumbai.tif
+/flood_polygons_mumbai.geojson
+/flood_summary_mumbai.txt

@@ -1,0 +1,5 @@
+outs:
+- md5: e5d11e48591cd0923a1be271221d3b14
+  size: 148
+  hash: md5
+  path: flood_summary_mumbai.txt

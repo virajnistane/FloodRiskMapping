@@ -1,0 +1,5 @@
+outs:
+- md5: ff10fa45e9fb465278b3bda731bbea1e
+  size: 57244
+  hash: md5
+  path: flood_polygons_mumbai.geojson

@@ -1,0 +1,5 @@
+outs:
+- md5: 5099e94ac27c04e8961aa3ee41f9ceaf
+  size: 124201
+  hash: md5
+  path: dem_mumbai.tif
