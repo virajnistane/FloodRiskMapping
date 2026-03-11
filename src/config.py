@@ -57,7 +57,7 @@ class Config:
     @property
     def flood_maps_dir(self) -> Path:
         """Directory for flood map visualizations."""
-        flood_maps_dir = self.processed_dir / "flood_maps"
+        flood_maps_dir = Path("flood_maps")
         flood_maps_dir.mkdir(parents=True, exist_ok=True)
         return flood_maps_dir
 
